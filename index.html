@@ -1,0 +1,1605 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="initial-scale=1,user-scalable=no,maximum-scale=1,width=device-width">
+        <meta name="mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <link rel="stylesheet" href="css/leaflet.css" />
+        <link rel="stylesheet" type="text/css" href="css/qgis2web.css">
+        <link rel="stylesheet" href="css/MarkerCluster.css" />
+        <link rel="stylesheet" href="css/MarkerCluster.Default.css" />
+		<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css"/>
+		<link rel="stylesheet" href="css/leaflet.zoomhome.css"/>
+		<link rel="stylesheet" href="css/L.control.pan.css"/>
+        <style>
+        html, body, #map {
+            width: 100%;
+            height: 100%;
+            padding: 0;
+            margin: 0;
+        }
+        </style>
+        <title>SingPost Office Coverage (Geospatial Analysis)</title>
+    </head>
+    <body>
+        <div id="map">
+        </div>
+        <script src="js/leaflet.js"></script>
+        <script src="js/leaflet-heat.js"></script>
+        <script src="js/leaflet.rotatedMarker.js"></script>
+        <script src="js/OSMBuildings-Leaflet.js"></script>
+        <script src="js/leaflet-hash.js"></script>
+        <script src="js/Autolinker.min.js"></script>
+        <script src="js/leaflet.markercluster.js"></script>
+        <script src="data/workingadultssubzones0.js"></script>
+        <script src="data/privateoutside1kmsubzones1.js"></script>
+        <script src="data/publicoutside1kmsubzones2.js"></script>
+        <script src="data/cntpublicoutside1kmsubzones3.js"></script>
+        <script src="data/cntprivateoutside1kmsubzones4.js"></script>
+        <script src="data/publiccoverage1km5.js"></script>
+        <script src="data/privatecoverage1km6.js"></script>
+        <script src="data/singpost7.js"></script>
+        <script src="data/privatehousing8.js"></script>
+        <script src="data/publichousing9.js"></script>
+        <script src="data/retailbuildings10.js"></script>
+        <script src="data/officebuildings11.js"></script>
+        <script src="data/industrialbuildings12.js"></script>
+		<script src="js/leaflet.zoomhome.min.js"></script>
+		<script src="js/L.Control.Pan.js"></script>
+        <script>
+        L.ImageOverlay.include({
+            getBounds: function () {
+                return this._bounds;
+            }
+        });
+		
+        var map = L.map('map', {
+            zoomControl:false, maxZoom:18, minZoom:10
+        }).fitBounds([[1.20522137342,103.611259577],[1.4882405846,104.084528144]]);
+		var zoomHome = L.Control.zoomHome();
+		zoomHome.addTo(map);
+        var hash = new L.Hash(map);
+        map.attributionControl.addAttribution('<a href="https://github.com/tomchadwin/qgis2web" target="_blank">qgis2web</a>');
+        var feature_group = new L.featureGroup([]);
+        var bounds_group = new L.featureGroup([]);
+        var raster_group = new L.LayerGroup([]);
+        var basemap0 = L.tileLayer('http://{s}.www.toolserver.org/tiles/bw-mapnik/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>',
+            maxZoom: 18
+        });
+        basemap0.addTo(map);
+		var basemap1 = L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+            maxZoom: 18
+        });
+		var Stamen_TonerLite = L.tileLayer('http://stamen-tiles-{s}.a.ssl.fastly.net/toner-lite/{z}/{x}/{y}.{ext}', {
+			attribution: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+			subdomains: 'abcd',
+			minZoom: 10,
+			maxZoom: 18,
+			ext: 'png'
+		});
+        function setBounds() {
+        }
+        function geoJson2heat(geojson, weight) {
+          return geojson.features.map(function(feature) {
+            return [
+              feature.geometry.coordinates[1],
+              feature.geometry.coordinates[0],
+              feature.properties[weight]
+            ];
+          });
+        }
+        function pop_workingadultssubzones0(feature, layer) {
+            var popupContent = '<table>\
+                    <tr>\
+                        <td colspan="2"><strong>Subzone Name</strong><br />' + (feature.properties['subzone_n'] !== null ? Autolinker.link(String(feature.properties['subzone_n'])) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2"><strong>Planning Area Name</strong><br />' + (feature.properties['pln_area_n'] !== null ? Autolinker.link(String(feature.properties['pln_area_n'])) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2"><strong>#Total Population</strong><br />' + (feature.properties['total'] !== null ? Autolinker.link(String(feature.properties['total'])) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2"><strong>#Population Aged 25-44 (Working Adults)</strong><br />' + (feature.properties['aged25-44'] !== null ? Autolinker.link(String(feature.properties['aged25-44'])) : '') + '</td>\
+                    </tr>\
+                </table>';
+            layer.bindPopup(popupContent);
+        }
+
+        function style_workingadultssubzones0(feature) {
+            if (feature.properties['aged25-44'] >= 0.000000 && feature.properties['aged25-44'] <= 2080.000000 ) {
+                return {
+                pane: 'pane_workingadultssubzones0',
+                opacity: 1,
+                color: 'rgba(0,0,0,0.8)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fillOpacity: 1,
+                fillColor: 'rgba(247,251,255,0.8)',
+            }
+            }
+            if (feature.properties['aged25-44'] >= 2080.000000 && feature.properties['aged25-44'] <= 6300.000000 ) {
+                return {
+                pane: 'pane_workingadultssubzones0',
+                opacity: 1,
+                color: 'rgba(0,0,0,0.8)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fillOpacity: 1,
+                fillColor: 'rgba(200,221,240,0.8)',
+            }
+            }
+            if (feature.properties['aged25-44'] >= 6300.000000 && feature.properties['aged25-44'] <= 13680.000000 ) {
+                return {
+                pane: 'pane_workingadultssubzones0',
+                opacity: 1,
+                color: 'rgba(0,0,0,0.8)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fillOpacity: 1,
+                fillColor: 'rgba(115,179,216,0.8)',
+            }
+            }
+            if (feature.properties['aged25-44'] >= 13680.000000 && feature.properties['aged25-44'] <= 24690.000000 ) {
+                return {
+                pane: 'pane_workingadultssubzones0',
+                opacity: 1,
+                color: 'rgba(0,0,0,0.8)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fillOpacity: 1,
+                fillColor: 'rgba(40,121,185,0.8)',
+            }
+            }
+            if (feature.properties['aged25-44'] >= 24690.000000 && feature.properties['aged25-44'] <= 39120.000000 ) {
+                return {
+                pane: 'pane_workingadultssubzones0',
+                opacity: 1,
+                color: 'rgba(0,0,0,0.8)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fillOpacity: 1,
+                fillColor: 'rgba(8,48,107,0.8)',
+            }
+            }
+        }
+        map.createPane('pane_workingadultssubzones0');
+        map.getPane('pane_workingadultssubzones0').style.zIndex = 600;
+        map.getPane('pane_workingadultssubzones0').style['mix-blend-mode'] = 'normal';
+    var layer_workingadultssubzones0 = new L.geoJson(json_workingadultssubzones0, {
+        pane: 'pane_workingadultssubzones0',
+        onEachFeature: pop_workingadultssubzones0,
+        style: style_workingadultssubzones0
+    });
+        bounds_group.addLayer(layer_workingadultssubzones0);
+        function pop_privateoutside1kmsubzones1(feature, layer) {
+            var popupContent = '<table>\
+                    <tr>\
+                        <td colspan="2"><strong>Subzone Name</strong><br />' + (feature.properties['subzone_n'] !== null ? Autolinker.link(String(feature.properties['subzone_n'])) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2"><strong>Planning Area Name</strong><br />' + (feature.properties['pln_area_n'] !== null ? Autolinker.link(String(feature.properties['pln_area_n'])) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2"><strong>#Total Population</strong><br />' + (feature.properties['total'] !== null ? Autolinker.link(String(feature.properties['total'])) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2"><strong>#Private Housing Locations >1km away from SingPost</strong><br />' + (feature.properties['numpoints'] !== null ? Autolinker.link(String(feature.properties['numpoints'])) : '') + '</td>\
+                    </tr>\
+					<tr>\
+                        <td colspan="2"><strong>#Private Housing Locations in Subzone</strong><br />' + (feature.properties['pntcnt'] !== null ? Autolinker.link(String(feature.properties['pntcnt'])) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2"><strong>Proportion(%) of Locations >1km away from SingPost</strong><br />' + (feature.properties['proppriv'] !== null ? Autolinker.link(String(feature.properties['proppriv'])) : '') + '</td>\
+                    </tr>\
+                </table>';
+            layer.bindPopup(popupContent);
+        }
+
+        function style_privateoutside1kmsubzones1(feature) {
+            if (feature.properties['proppriv'] >= 0.000000 && feature.properties['proppriv'] <= 0.125000 ) {
+                return {
+                pane: 'pane_privateoutside1kmsubzones1',
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fillOpacity: 1,
+                fillColor: 'rgba(255,245,240,1.0)',
+            }
+            }
+            if (feature.properties['proppriv'] >= 0.125000 && feature.properties['proppriv'] <= 0.348840 ) {
+                return {
+                pane: 'pane_privateoutside1kmsubzones1',
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fillOpacity: 1,
+                fillColor: 'rgba(252,189,164,1.0)',
+            }
+            }
+            if (feature.properties['proppriv'] >= 0.348840 && feature.properties['proppriv'] <= 0.555740 ) {
+                return {
+                pane: 'pane_privateoutside1kmsubzones1',
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fillOpacity: 1,
+                fillColor: 'rgba(251,112,80,1.0)',
+            }
+            }
+            if (feature.properties['proppriv'] >= 0.555740 && feature.properties['proppriv'] <= 0.809520 ) {
+                return {
+                pane: 'pane_privateoutside1kmsubzones1',
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fillOpacity: 1,
+                fillColor: 'rgba(211,32,32,1.0)',
+            }
+            }
+            if (feature.properties['proppriv'] >= 0.809520 && feature.properties['proppriv'] <= 1.000000 ) {
+                return {
+                pane: 'pane_privateoutside1kmsubzones1',
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fillOpacity: 1,
+                fillColor: 'rgba(103,0,13,1.0)',
+            }
+            }
+        }
+        map.createPane('pane_privateoutside1kmsubzones1');
+        map.getPane('pane_privateoutside1kmsubzones1').style.zIndex = 601;
+        map.getPane('pane_privateoutside1kmsubzones1').style['mix-blend-mode'] = 'normal';
+    var layer_privateoutside1kmsubzones1 = new L.geoJson(json_privateoutside1kmsubzones1, {
+        pane: 'pane_privateoutside1kmsubzones1',
+        onEachFeature: pop_privateoutside1kmsubzones1,
+        style: style_privateoutside1kmsubzones1
+    });
+        bounds_group.addLayer(layer_privateoutside1kmsubzones1);
+        function pop_publicoutside1kmsubzones2(feature, layer) {
+            var popupContent = '<table>\
+                    <tr>\
+                        <td colspan="2"><strong>Subzone Name</strong><br />' + (feature.properties['subzone_n'] !== null ? Autolinker.link(String(feature.properties['subzone_n'])) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2"><strong>Planning Area Name</strong><br />' + (feature.properties['pln_area_n'] !== null ? Autolinker.link(String(feature.properties['pln_area_n'])) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2"><strong>#Total Population</strong><br />' + (feature.properties['total'] !== null ? Autolinker.link(String(feature.properties['total'])) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2"><strong>#Public Housing Locations >1km away from SingPost</strong><br />' + (feature.properties['numpoints'] !== null ? Autolinker.link(String(feature.properties['numpoints'])) : '') + '</td>\
+                    </tr>\
+					<tr>\
+                        <td colspan="2"><strong>#Public Housing Locations in Subzone</strong><br />' + (feature.properties['pntcnt'] !== null ? Autolinker.link(String(feature.properties['pntcnt'])) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2"><strong>Proportion(%) of Locations >1km away from SingPost</strong><br />' + (feature.properties['proppublic'] !== null ? Autolinker.link(String(feature.properties['proppublic'])) : '') + '</td>\
+                    </tr>\
+                </table>';
+            layer.bindPopup(popupContent);
+        }
+
+        function style_publicoutside1kmsubzones2(feature) {
+            if (feature.properties['proppublic'] >= 0.000000 && feature.properties['proppublic'] <= 0.121210 ) {
+                return {
+                pane: 'pane_publicoutside1kmsubzones2',
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fillOpacity: 1,
+                fillColor: 'rgba(255,245,240,1.0)',
+            }
+            }
+            if (feature.properties['proppublic'] >= 0.121210 && feature.properties['proppublic'] <= 0.343280 ) {
+                return {
+                pane: 'pane_publicoutside1kmsubzones2',
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fillOpacity: 1,
+                fillColor: 'rgba(252,189,164,1.0)',
+            }
+            }
+            if (feature.properties['proppublic'] >= 0.343280 && feature.properties['proppublic'] <= 0.551020 ) {
+                return {
+                pane: 'pane_publicoutside1kmsubzones2',
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fillOpacity: 1,
+                fillColor: 'rgba(251,112,80,1.0)',
+            }
+            }
+            if (feature.properties['proppublic'] >= 0.551020 && feature.properties['proppublic'] <= 0.793650 ) {
+                return {
+                pane: 'pane_publicoutside1kmsubzones2',
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fillOpacity: 1,
+                fillColor: 'rgba(211,32,32,1.0)',
+            }
+            }
+            if (feature.properties['proppublic'] >= 0.793650 && feature.properties['proppublic'] <= 1.000000 ) {
+                return {
+                pane: 'pane_publicoutside1kmsubzones2',
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fillOpacity: 1,
+                fillColor: 'rgba(103,0,13,1.0)',
+            }
+            }
+        }
+        map.createPane('pane_publicoutside1kmsubzones2');
+        map.getPane('pane_publicoutside1kmsubzones2').style.zIndex = 602;
+        map.getPane('pane_publicoutside1kmsubzones2').style['mix-blend-mode'] = 'normal';
+    var layer_publicoutside1kmsubzones2 = new L.geoJson(json_publicoutside1kmsubzones2, {
+        pane: 'pane_publicoutside1kmsubzones2',
+        onEachFeature: pop_publicoutside1kmsubzones2,
+        style: style_publicoutside1kmsubzones2
+    });
+        bounds_group.addLayer(layer_publicoutside1kmsubzones2);
+        function pop_cntpublicoutside1kmsubzones3(feature, layer) {
+            var popupContent = '<table>\
+                    <tr>\
+                        <td colspan="2"><strong>Subzone Name</strong><br />' + (feature.properties['subzone_n'] !== null ? Autolinker.link(String(feature.properties['subzone_n'])) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2"><strong>Planning Area Name</strong><br />' + (feature.properties['pln_area_n'] !== null ? Autolinker.link(String(feature.properties['pln_area_n'])) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2"><strong>#Total Population</strong><br />' + (feature.properties['total'] !== null ? Autolinker.link(String(feature.properties['total'])) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2"><strong>#Public Housing Locations >1km away from SingPost</strong><br />' + (feature.properties['numpoints'] !== null ? Autolinker.link(String(feature.properties['numpoints'])) : '') + '</td>\
+                    </tr>\
+					<tr>\
+                        <td colspan="2"><strong>#Public Housing Locations in Subzone</strong><br />' + (feature.properties['pntcnt'] !== null ? Autolinker.link(String(feature.properties['pntcnt'])) : '') + '</td>\
+                    </tr>\
+                </table>';
+            layer.bindPopup(popupContent);
+        }
+
+        function style_cntpublicoutside1kmsubzones3(feature) {
+            if (feature.properties['numpoints'] >= 0.000000 && feature.properties['numpoints'] <= 9.000000 ) {
+                return {
+                pane: 'pane_cntpublicoutside1kmsubzones3',
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fillOpacity: 1,
+                fillColor: 'rgba(255,245,240,1.0)',
+            }
+            }
+            if (feature.properties['numpoints'] >= 9.000000 && feature.properties['numpoints'] <= 36.000000 ) {
+                return {
+                pane: 'pane_cntpublicoutside1kmsubzones3',
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fillOpacity: 1,
+                fillColor: 'rgba(252,189,164,1.0)',
+            }
+            }
+            if (feature.properties['numpoints'] >= 36.000000 && feature.properties['numpoints'] <= 70.000000 ) {
+                return {
+                pane: 'pane_cntpublicoutside1kmsubzones3',
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fillOpacity: 1,
+                fillColor: 'rgba(251,112,80,1.0)',
+            }
+            }
+            if (feature.properties['numpoints'] >= 70.000000 && feature.properties['numpoints'] <= 142.000000 ) {
+                return {
+                pane: 'pane_cntpublicoutside1kmsubzones3',
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fillOpacity: 1,
+                fillColor: 'rgba(211,32,32,1.0)',
+            }
+            }
+            if (feature.properties['numpoints'] >= 142.000000 && feature.properties['numpoints'] <= 260.000000 ) {
+                return {
+                pane: 'pane_cntpublicoutside1kmsubzones3',
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fillOpacity: 1,
+                fillColor: 'rgba(103,0,13,1.0)',
+            }
+            }
+        }
+        map.createPane('pane_cntpublicoutside1kmsubzones3');
+        map.getPane('pane_cntpublicoutside1kmsubzones3').style.zIndex = 603;
+        map.getPane('pane_cntpublicoutside1kmsubzones3').style['mix-blend-mode'] = 'normal';
+    var layer_cntpublicoutside1kmsubzones3 = new L.geoJson(json_cntpublicoutside1kmsubzones3, {
+        pane: 'pane_cntpublicoutside1kmsubzones3',
+        onEachFeature: pop_cntpublicoutside1kmsubzones3,
+        style: style_cntpublicoutside1kmsubzones3
+    });
+        bounds_group.addLayer(layer_cntpublicoutside1kmsubzones3);
+        function pop_cntprivateoutside1kmsubzones4(feature, layer) {
+            var popupContent = '<table>\
+                    <tr>\
+                        <td colspan="2"><strong>Subzone Name</strong><br />' + (feature.properties['subzone_n'] !== null ? Autolinker.link(String(feature.properties['subzone_n'])) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2"><strong>Planning Area Name</strong><br />' + (feature.properties['pln_area_n'] !== null ? Autolinker.link(String(feature.properties['pln_area_n'])) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2"><strong>#Total Population</strong><br />' + (feature.properties['total'] !== null ? Autolinker.link(String(feature.properties['total'])) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2"><strong>#Private Housing Locations >1km away from SingPost</strong><br />' + (feature.properties['numpoints'] !== null ? Autolinker.link(String(feature.properties['numpoints'])) : '') + '</td>\
+                    </tr>\
+					<tr>\
+                        <td colspan="2"><strong>#Private Housing Locations in Subzone</strong><br />' + (feature.properties['pntcnt'] !== null ? Autolinker.link(String(feature.properties['pntcnt'])) : '') + '</td>\
+                    </tr>\
+                </table>';
+            layer.bindPopup(popupContent);
+        }
+
+        function style_cntprivateoutside1kmsubzones4(feature) {
+            if (feature.properties['numpoints'] >= 0.000000 && feature.properties['numpoints'] <= 15.000000 ) {
+                return {
+                pane: 'pane_cntprivateoutside1kmsubzones4',
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fillOpacity: 1,
+                fillColor: 'rgba(255,245,240,1.0)',
+            }
+            }
+            if (feature.properties['numpoints'] >= 15.000000 && feature.properties['numpoints'] <= 56.000000 ) {
+                return {
+                pane: 'pane_cntprivateoutside1kmsubzones4',
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fillOpacity: 1,
+                fillColor: 'rgba(252,189,164,1.0)',
+            }
+            }
+            if (feature.properties['numpoints'] >= 56.000000 && feature.properties['numpoints'] <= 106.000000 ) {
+                return {
+                pane: 'pane_cntprivateoutside1kmsubzones4',
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fillOpacity: 1,
+                fillColor: 'rgba(251,112,80,1.0)',
+            }
+            }
+            if (feature.properties['numpoints'] >= 106.000000 && feature.properties['numpoints'] <= 177.000000 ) {
+                return {
+                pane: 'pane_cntprivateoutside1kmsubzones4',
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fillOpacity: 1,
+                fillColor: 'rgba(211,32,32,1.0)',
+            }
+            }
+            if (feature.properties['numpoints'] >= 177.000000 && feature.properties['numpoints'] <= 344.000000 ) {
+                return {
+                pane: 'pane_cntprivateoutside1kmsubzones4',
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fillOpacity: 1,
+                fillColor: 'rgba(103,0,13,1.0)',
+            }
+            }
+        }
+        map.createPane('pane_cntprivateoutside1kmsubzones4');
+        map.getPane('pane_cntprivateoutside1kmsubzones4').style.zIndex = 604;
+        map.getPane('pane_cntprivateoutside1kmsubzones4').style['mix-blend-mode'] = 'normal';
+    var layer_cntprivateoutside1kmsubzones4 = new L.geoJson(json_cntprivateoutside1kmsubzones4, {
+        pane: 'pane_cntprivateoutside1kmsubzones4',
+        onEachFeature: pop_cntprivateoutside1kmsubzones4,
+        style: style_cntprivateoutside1kmsubzones4
+    });
+        bounds_group.addLayer(layer_cntprivateoutside1kmsubzones4);
+        function pop_publiccoverage1km5(feature, layer) {
+            var popupContent = '<table>\
+                    <tr>\
+                        <td colspan="2"><strong>Branch Name</strong><br />' + (feature.properties['branch_n_1'] !== null ? Autolinker.link(String(feature.properties['branch_n_1'])) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2"><strong>Branch Address</strong><br />' + (feature.properties['branch_a_1'] !== null ? Autolinker.link(String(feature.properties['branch_a_1'])) : '') + '</td>\
+                    </tr>\
+					<tr>\
+                        <td colspan="2"><strong>Postal Code</strong><br />' + (feature.properties['postal_n_1'] !== null ? Autolinker.link(String(feature.properties['postal_n_1'])) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2"><strong>Open on Sundays</strong><br />' + (feature.properties['open_on__1'] !== null ? Autolinker.link(String(feature.properties['open_on__1'])) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2"><strong>Open on Public Holidays</strong><br />' + (feature.properties['open_on__2'] !== null ? Autolinker.link(String(feature.properties['open_on__2'])) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2"><strong>#Public Housing Locations within 1km radius</strong><br />' + (feature.properties['publicin1kmbuffer_numpoints'] !== null ? Autolinker.link(String(feature.properties['publicin1kmbuffer_numpoints'])) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2"><strong>#Public Housing Locations assigned to this outlet</strong><br />' + (feature.properties['publictobranch_count'] !== null ? Autolinker.link(String(feature.properties['publictobranch_count'])) : '') + '</td>\
+                    </tr>\
+					<tr>\
+                        <td colspan="2"><strong>Proportion(%) of assigned locations within 1km radius</strong><br />' + (feature.properties['proppublic'] !== null ? Autolinker.link(String(feature.properties['proppublic'])) : '') + '</td>\
+                    </tr>\
+                </table>';
+            layer.bindPopup(popupContent);
+        }
+
+        function style_publiccoverage1km5(feature) {
+            if (feature.properties['proppublic'] >= 0.000000 && feature.properties['proppublic'] <= 0.000000 ) {
+                return {
+                pane: 'pane_publiccoverage1km5',
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fillOpacity: 1,
+                fillColor: 'rgba(247,251,255,1.0)',
+            }
+            }
+            if (feature.properties['proppublic'] >= 0.000000 && feature.properties['proppublic'] <= 0.398844 ) {
+                return {
+                pane: 'pane_publiccoverage1km5',
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fillOpacity: 1,
+                fillColor: 'rgba(199,220,239,1.0)',
+            }
+            }
+            if (feature.properties['proppublic'] >= 0.398844 && feature.properties['proppublic'] <= 0.633423 ) {
+                return {
+                pane: 'pane_publiccoverage1km5',
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fillOpacity: 1,
+                fillColor: 'rgba(114,178,215,1.0)',
+            }
+            }
+            if (feature.properties['proppublic'] >= 0.633423 && feature.properties['proppublic'] <= 0.840000 ) {
+                return {
+                pane: 'pane_publiccoverage1km5',
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fillOpacity: 1,
+                fillColor: 'rgba(40,120,184,1.0)',
+            }
+            }
+            if (feature.properties['proppublic'] >= 0.840000 && feature.properties['proppublic'] <= 1.000000 ) {
+                return {
+                pane: 'pane_publiccoverage1km5',
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fillOpacity: 1,
+                fillColor: 'rgba(8,48,107,1.0)',
+            }
+            }
+        }
+        map.createPane('pane_publiccoverage1km5');
+        map.getPane('pane_publiccoverage1km5').style.zIndex = 605;
+        map.getPane('pane_publiccoverage1km5').style['mix-blend-mode'] = 'normal';
+    var layer_publiccoverage1km5 = new L.geoJson(json_publiccoverage1km5, {
+        pane: 'pane_publiccoverage1km5',
+        onEachFeature: pop_publiccoverage1km5,
+        style: style_publiccoverage1km5
+    });
+        bounds_group.addLayer(layer_publiccoverage1km5);
+        function pop_privatecoverage1km6(feature, layer) {
+            var popupContent = '<table>\
+                    <tr>\
+                        <td colspan="2"><strong>Branch Name</strong><br />' + (feature.properties['branch_n_1'] !== null ? Autolinker.link(String(feature.properties['branch_n_1'])) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2"><strong>Branch Address</strong><br />' + (feature.properties['branch_a_1'] !== null ? Autolinker.link(String(feature.properties['branch_a_1'])) : '') + '</td>\
+                    </tr>\
+					<tr>\
+                        <td colspan="2"><strong>Postal Code</strong><br />' + (feature.properties['postal_n_1'] !== null ? Autolinker.link(String(feature.properties['postal_n_1'])) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2"><strong>Open on Sundays</strong><br />' + (feature.properties['open_on__1'] !== null ? Autolinker.link(String(feature.properties['open_on__1'])) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2"><strong>Open on Public Holidays</strong><br />' + (feature.properties['open_on__2'] !== null ? Autolinker.link(String(feature.properties['open_on__2'])) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2"><strong>#Private Housing Locations within 1km radius</strong><br />' + (feature.properties['privatein1kmbuffer_numpoints'] !== null ? Autolinker.link(String(feature.properties['privatein1kmbuffer_numpoints'])) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2"><strong>#Private Housing Locations assigned to this outlet</strong><br />' + (feature.properties['privatetobranch_count'] !== null ? Autolinker.link(String(feature.properties['privatetobranch_count'])) : '') + '</td>\
+                    </tr>\
+					<tr>\
+                        <td colspan="2"><strong>Proportion(%) of assigned locations within 1km radius</strong><br />' + (feature.properties['propprivate'] !== null ? Autolinker.link(String(feature.properties['propprivate'])) : '') + '</td>\
+                    </tr>\
+                </table>';
+            layer.bindPopup(popupContent);
+        }
+
+        function style_privatecoverage1km6(feature) {
+            if (feature.properties['proppriv'] >= 0.000000 && feature.properties['proppriv'] <= 0.138830 ) {
+                return {
+                pane: 'pane_privatecoverage1km6',
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fillOpacity: 1,
+                fillColor: 'rgba(247,251,255,1.0)',
+            }
+            }
+            if (feature.properties['proppriv'] >= 0.138830 && feature.properties['proppriv'] <= 0.326390 ) {
+                return {
+                pane: 'pane_privatecoverage1km6',
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fillOpacity: 1,
+                fillColor: 'rgba(199,220,239,1.0)',
+            }
+            }
+            if (feature.properties['proppriv'] >= 0.326390 && feature.properties['proppriv'] <= 0.593750 ) {
+                return {
+                pane: 'pane_privatecoverage1km6',
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fillOpacity: 1,
+                fillColor: 'rgba(114,178,215,1.0)',
+            }
+            }
+            if (feature.properties['proppriv'] >= 0.593750 && feature.properties['proppriv'] <= 0.810950 ) {
+                return {
+                pane: 'pane_privatecoverage1km6',
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fillOpacity: 1,
+                fillColor: 'rgba(40,120,184,1.0)',
+            }
+            }
+            if (feature.properties['proppriv'] >= 0.810950 && feature.properties['proppriv'] <= 1.000000 ) {
+                return {
+                pane: 'pane_privatecoverage1km6',
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fillOpacity: 1,
+                fillColor: 'rgba(8,48,107,1.0)',
+            }
+            }
+        }
+        map.createPane('pane_privatecoverage1km6');
+        map.getPane('pane_privatecoverage1km6').style.zIndex = 606;
+        map.getPane('pane_privatecoverage1km6').style['mix-blend-mode'] = 'normal';
+    var layer_privatecoverage1km6 = new L.geoJson(json_privatecoverage1km6, {
+        pane: 'pane_privatecoverage1km6',
+        onEachFeature: pop_privatecoverage1km6,
+        style: style_privatecoverage1km6
+    });
+        bounds_group.addLayer(layer_privatecoverage1km6);
+        function pop_singpost7(feature, layer) {
+            var popupContent = '<table>\
+                    <tr>\
+                        <td colspan="2"><strong>Brance Name</strong><br />' + (feature.properties['branch_nam'] !== null ? Autolinker.link(String(feature.properties['branch_nam'])) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2"><strong>Branch Address</strong><br />' + (feature.properties['branch_add'] !== null ? Autolinker.link(String(feature.properties['branch_add'])) : '') + '</td>\
+                    </tr>\
+					<tr>\
+                        <td colspan="2"><strong>Postal Code</strong><br />' + (feature.properties['postal_new'] !== null ? Autolinker.link(String(feature.properties['postal_new'])) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2"><strong>Open on Sundays</strong><br />' + (feature.properties['open_on_su'] !== null ? Autolinker.link(String(feature.properties['open_on_su'])) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2"><strong>Open on Public Holidays</strong><br />' + (feature.properties['open_on_ph'] !== null ? Autolinker.link(String(feature.properties['open_on_ph'])) : '') + '</td>\
+                    </tr>\
+                </table>';
+            layer.bindPopup(popupContent);
+        }
+
+        function style_singpost7() {
+            return {
+                pane: 'pane_singpost7',
+        rotationAngle: 0.0,
+        rotationOrigin: 'center center',
+        icon: L.icon({
+            iconUrl: 'markers/amenity_post_box.svg',
+            iconSize: [22.8, 22.8]
+        }),
+            }
+        }
+        map.createPane('pane_singpost7');
+        map.getPane('pane_singpost7').style.zIndex = 607;
+        map.getPane('pane_singpost7').style['mix-blend-mode'] = 'normal';
+        var layer_singpost7 = new L.geoJson(json_singpost7, {
+            pane: 'pane_singpost7',
+            onEachFeature: pop_singpost7,
+            pointToLayer: function (feature, latlng) {
+                return L.marker(latlng, style_singpost7(feature))
+            }
+        });
+        bounds_group.addLayer(layer_singpost7);
+        feature_group.addLayer(layer_singpost7);
+        function pop_privatehousing8(feature, layer) {
+            var popupContent = '<table>\
+                    <tr>\
+                        <td colspan="2"><strong>Postal Code</strong><br />' + (feature.properties['postal_new'] !== null ? Autolinker.link(String(feature.properties['postal_new'])) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2"><strong>Assigned nearest SingPost outlet</strong><br />' + (feature.properties['hubname'] !== null ? Autolinker.link(String(feature.properties['hubname'])) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2"><strong>Distance to SingPost outlet (meters)</strong><br />' + (feature.properties['hub_length'] !== null ? Autolinker.link(String(feature.properties['hub_length'])) : '') + '</td>\
+                    </tr>\
+                </table>';
+            layer.bindPopup(popupContent);
+        }
+
+        function style_privatehousing8(feature) {
+            if (feature.properties['hub_length'] >= 16.610000 && feature.properties['hub_length'] <= 500.000000 ) {
+                return {
+                pane: 'pane_privatehousing8',
+                radius: 8.0,
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 2,
+                fillOpacity: 1,
+                fillColor: 'rgba(254,240,217,1.0)',
+            }
+            }
+            if (feature.properties['hub_length'] >= 500.000000 && feature.properties['hub_length'] <= 750.000000 ) {
+                return {
+                pane: 'pane_privatehousing8',
+                radius: 8.0,
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 2,
+                fillOpacity: 1,
+                fillColor: 'rgba(253,204,138,1.0)',
+            }
+            }
+            if (feature.properties['hub_length'] >= 750.000000 && feature.properties['hub_length'] <= 1000.000000 ) {
+                return {
+                pane: 'pane_privatehousing8',
+                radius: 8.0,
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 2,
+                fillOpacity: 1,
+                fillColor: 'rgba(252,141,89,1.0)',
+            }
+            }
+            if (feature.properties['hub_length'] >= 1000.000000 && feature.properties['hub_length'] <= 2000.000000 ) {
+                return {
+                pane: 'pane_privatehousing8',
+                radius: 8.0,
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 2,
+                fillOpacity: 1,
+                fillColor: 'rgba(227,74,51,1.0)',
+            }
+            }
+            if (feature.properties['hub_length'] >= 2000.000000 && feature.properties['hub_length'] <= 4093.340000 ) {
+                return {
+                pane: 'pane_privatehousing8',
+                radius: 8.0,
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 2,
+                fillOpacity: 1,
+                fillColor: 'rgba(179,0,0,1.0)',
+            }
+            }
+        }
+        map.createPane('pane_privatehousing8');
+        map.getPane('pane_privatehousing8').style.zIndex = 608;
+        map.getPane('pane_privatehousing8').style['mix-blend-mode'] = 'normal';
+        var layer_privatehousing8 = new L.geoJson(json_privatehousing8, {
+            pane: 'pane_privatehousing8',
+            onEachFeature: pop_privatehousing8,
+            pointToLayer: function (feature, latlng) {
+                return L.circleMarker(latlng, style_privatehousing8(feature))
+            }
+        });
+        var cluster_privatehousing8 = new L.MarkerClusterGroup({showCoverageOnHover: false, disableClusteringAtZoom: 17});
+        cluster_privatehousing8.addLayer(layer_privatehousing8);
+
+        bounds_group.addLayer(layer_privatehousing8);
+        function pop_publichousing9(feature, layer) {
+            var popupContent = '<table>\
+                    <tr>\
+                        <td colspan="2"><strong>Postal Code</strong><br />' + (feature.properties['postalcode'] !== null ? Autolinker.link(String(feature.properties['postalcode'])) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2"><strong>Assigned nearest SingPost outlet</strong><br />' + (feature.properties['hubname'] !== null ? Autolinker.link(String(feature.properties['hubname'])) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2"><strong>Distance to SingPost outlet (meters)</strong><br />' + (feature.properties['hub_length'] !== null ? Autolinker.link(String(feature.properties['hub_length'])) : '') + '</td>\
+                    </tr>\
+                </table>';
+            layer.bindPopup(popupContent);
+        }
+
+        function style_publichousing9(feature) {
+            if (feature.properties['hub_length'] >= 0.000000 && feature.properties['hub_length'] <= 500.000000 ) {
+                return {
+                pane: 'pane_publichousing9',
+                radius: 8.0,
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 2,
+                fillOpacity: 1,
+                fillColor: 'rgba(255,245,240,1.0)',
+            }
+            }
+            if (feature.properties['hub_length'] >= 500.000000 && feature.properties['hub_length'] <= 750.000000 ) {
+                return {
+                pane: 'pane_publichousing9',
+                radius: 8.0,
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 2,
+                fillOpacity: 1,
+                fillColor: 'rgba(252,189,164,1.0)',
+            }
+            }
+            if (feature.properties['hub_length'] >= 750.000000 && feature.properties['hub_length'] <= 1000.000000 ) {
+                return {
+                pane: 'pane_publichousing9',
+                radius: 8.0,
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 2,
+                fillOpacity: 1,
+                fillColor: 'rgba(251,112,80,1.0)',
+            }
+            }
+            if (feature.properties['hub_length'] >= 1000.000000 && feature.properties['hub_length'] <= 2000.000000 ) {
+                return {
+                pane: 'pane_publichousing9',
+                radius: 8.0,
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 2,
+                fillOpacity: 1,
+                fillColor: 'rgba(211,32,32,1.0)',
+            }
+            }
+            if (feature.properties['hub_length'] >= 2000.000000 && feature.properties['hub_length'] <= 3692.700000 ) {
+                return {
+                pane: 'pane_publichousing9',
+                radius: 8.0,
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 2,
+                fillOpacity: 1,
+                fillColor: 'rgba(103,0,13,1.0)',
+            }
+            }
+        }
+        map.createPane('pane_publichousing9');
+        map.getPane('pane_publichousing9').style.zIndex = 609;
+        map.getPane('pane_publichousing9').style['mix-blend-mode'] = 'normal';
+        var layer_publichousing9 = new L.geoJson(json_publichousing9, {
+            pane: 'pane_publichousing9',
+            onEachFeature: pop_publichousing9,
+            pointToLayer: function (feature, latlng) {
+                return L.circleMarker(latlng, style_publichousing9(feature))
+            }
+        });
+        var cluster_publichousing9 = new L.MarkerClusterGroup({showCoverageOnHover: false, disableClusteringAtZoom: 17});
+        cluster_publichousing9.addLayer(layer_publichousing9);
+
+        bounds_group.addLayer(layer_publichousing9);
+        function pop_retailbuildings10(feature, layer) {
+            var popupContent = '<table>\
+                    <tr>\
+                        <td colspan="2"><strong>Postal Code</strong><br />' + (feature.properties['postal cod'] !== null ? Autolinker.link(String(feature.properties['postal cod'])) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2"><strong>Assigned nearest SingPost outlet</strong><br />' + (feature.properties['hubname'] !== null ? Autolinker.link(String(feature.properties['hubname'])) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2"><strong>Distance to SingPost outlet (meters)</strong><br />' + (feature.properties['hub_length'] !== null ? Autolinker.link(String(feature.properties['hub_length'])) : '') + '</td>\
+                    </tr>\
+                </table>';
+            layer.bindPopup(popupContent);
+        }
+
+        function style_retailbuildings10(feature) {
+            if (feature.properties['hub_length'] >= 0.000000 && feature.properties['hub_length'] <= 500.000000 ) {
+                return {
+                pane: 'pane_retailbuildings10',
+                radius: 8.0,
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 2,
+                fillOpacity: 1,
+                fillColor: 'rgba(255,245,240,1.0)',
+            }
+            }
+            if (feature.properties['hub_length'] >= 500.000000 && feature.properties['hub_length'] <= 750.000000 ) {
+                return {
+                pane: 'pane_retailbuildings10',
+                radius: 8.0,
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 2,
+                fillOpacity: 1,
+                fillColor: 'rgba(252,189,164,1.0)',
+            }
+            }
+            if (feature.properties['hub_length'] >= 750.000000 && feature.properties['hub_length'] <= 1000.000000 ) {
+                return {
+                pane: 'pane_retailbuildings10',
+                radius: 8.0,
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 2,
+                fillOpacity: 1,
+                fillColor: 'rgba(251,112,80,1.0)',
+            }
+            }
+            if (feature.properties['hub_length'] >= 1000.000000 && feature.properties['hub_length'] <= 2000.000000 ) {
+                return {
+                pane: 'pane_retailbuildings10',
+                radius: 8.0,
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 2,
+                fillOpacity: 1,
+                fillColor: 'rgba(211,32,32,1.0)',
+            }
+            }
+            if (feature.properties['hub_length'] >= 2000.000000 && feature.properties['hub_length'] <= 3568.410000 ) {
+                return {
+                pane: 'pane_retailbuildings10',
+                radius: 8.0,
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 2,
+                fillOpacity: 1,
+                fillColor: 'rgba(103,0,13,1.0)',
+            }
+            }
+        }
+        map.createPane('pane_retailbuildings10');
+        map.getPane('pane_retailbuildings10').style.zIndex = 610;
+        map.getPane('pane_retailbuildings10').style['mix-blend-mode'] = 'normal';
+        var layer_retailbuildings10 = new L.geoJson(json_retailbuildings10, {
+            pane: 'pane_retailbuildings10',
+            onEachFeature: pop_retailbuildings10,
+            pointToLayer: function (feature, latlng) {
+                return L.circleMarker(latlng, style_retailbuildings10(feature))
+            }
+        });
+        var cluster_retailbuildings10 = new L.MarkerClusterGroup({showCoverageOnHover: false, disableClusteringAtZoom: 17});
+        cluster_retailbuildings10.addLayer(layer_retailbuildings10);
+
+        bounds_group.addLayer(layer_retailbuildings10);
+        function pop_officebuildings11(feature, layer) {
+            var popupContent = '<table>\
+                    <tr>\
+                        <td colspan="2"><strong>Postal Code</strong><br />' + (feature.properties['postal cod'] !== null ? Autolinker.link(String(feature.properties['postal cod'])) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2"><strong>Assigned nearest SingPost outlet</strong><br />' + (feature.properties['hubname'] !== null ? Autolinker.link(String(feature.properties['hubname'])) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2"><strong>Distance to SingPost outlet (meters)</strong><br />' + (feature.properties['hub_length'] !== null ? Autolinker.link(String(feature.properties['hub_length'])) : '') + '</td>\
+                    </tr>\
+                </table>';
+            layer.bindPopup(popupContent);
+        }
+
+        function style_officebuildings11(feature) {
+            if (feature.properties['hub_length'] >= 0.000000 && feature.properties['hub_length'] <= 500.000000 ) {
+                return {
+                pane: 'pane_officebuildings11',
+                radius: 8.0,
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 2,
+                fillOpacity: 1,
+                fillColor: 'rgba(255,245,240,1.0)',
+            }
+            }
+            if (feature.properties['hub_length'] >= 500.000000 && feature.properties['hub_length'] <= 750.000000 ) {
+                return {
+                pane: 'pane_officebuildings11',
+                radius: 8.0,
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 2,
+                fillOpacity: 1,
+                fillColor: 'rgba(252,189,164,1.0)',
+            }
+            }
+            if (feature.properties['hub_length'] >= 750.000000 && feature.properties['hub_length'] <= 1000.000000 ) {
+                return {
+                pane: 'pane_officebuildings11',
+                radius: 8.0,
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 2,
+                fillOpacity: 1,
+                fillColor: 'rgba(251,112,80,1.0)',
+            }
+            }
+            if (feature.properties['hub_length'] >= 1000.000000 && feature.properties['hub_length'] <= 2000.000000 ) {
+                return {
+                pane: 'pane_officebuildings11',
+                radius: 8.0,
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 2,
+                fillOpacity: 1,
+                fillColor: 'rgba(211,32,32,1.0)',
+            }
+            }
+            if (feature.properties['hub_length'] >= 2000.000000 && feature.properties['hub_length'] <= 2433.590000 ) {
+                return {
+                pane: 'pane_officebuildings11',
+                radius: 8.0,
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 2,
+                fillOpacity: 1,
+                fillColor: 'rgba(103,0,13,1.0)',
+            }
+            }
+        }
+        map.createPane('pane_officebuildings11');
+        map.getPane('pane_officebuildings11').style.zIndex = 611;
+        map.getPane('pane_officebuildings11').style['mix-blend-mode'] = 'normal';
+        var layer_officebuildings11 = new L.geoJson(json_officebuildings11, {
+            pane: 'pane_officebuildings11',
+            onEachFeature: pop_officebuildings11,
+            pointToLayer: function (feature, latlng) {
+                return L.circleMarker(latlng, style_officebuildings11(feature))
+            }
+        });
+        var cluster_officebuildings11 = new L.MarkerClusterGroup({showCoverageOnHover: false, disableClusteringAtZoom: 17});
+        cluster_officebuildings11.addLayer(layer_officebuildings11);
+
+        bounds_group.addLayer(layer_officebuildings11);
+        function pop_industrialbuildings12(feature, layer) {
+            var popupContent = '<table>\
+                    <tr>\
+                        <td colspan="2"><strong>Postal Code</strong><br />' + (feature.properties['postal cod'] !== null ? Autolinker.link(String(feature.properties['postal cod'])) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2"><strong>Assigned nearest SingPost outlet</strong><br />' + (feature.properties['hubname'] !== null ? Autolinker.link(String(feature.properties['hubname'])) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2"><strong>Distance to SingPost outlet (meters)</strong><br />' + (feature.properties['hub_length'] !== null ? Autolinker.link(String(feature.properties['hub_length'])) : '') + '</td>\
+                    </tr>\
+                </table>';
+            layer.bindPopup(popupContent);
+        }
+
+        function style_industrialbuildings12(feature) {
+            if (feature.properties['hub_length'] >= 251.240000 && feature.properties['hub_length'] <= 1000.000000 ) {
+                return {
+                pane: 'pane_industrialbuildings12',
+                radius: 8.0,
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 2,
+                fillOpacity: 1,
+                fillColor: 'rgba(255,245,240,1.0)',
+            }
+            }
+            if (feature.properties['hub_length'] >= 1000.000000 && feature.properties['hub_length'] <= 2000.000000 ) {
+                return {
+                pane: 'pane_industrialbuildings12',
+                radius: 8.0,
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 2,
+                fillOpacity: 1,
+                fillColor: 'rgba(252,163,134,1.0)',
+            }
+            }
+            if (feature.properties['hub_length'] >= 2000.000000 && feature.properties['hub_length'] <= 4000.000000 ) {
+                return {
+                pane: 'pane_industrialbuildings12',
+                radius: 8.0,
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 2,
+                fillOpacity: 1,
+                fillColor: 'rgba(234,54,42,1.0)',
+            }
+            }
+            if (feature.properties['hub_length'] >= 4000.000000 && feature.properties['hub_length'] <= 11518.643040 ) {
+                return {
+                pane: 'pane_industrialbuildings12',
+                radius: 8.0,
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 2,
+                fillOpacity: 1,
+                fillColor: 'rgba(103,0,13,1.0)',
+            }
+            }
+        }
+        map.createPane('pane_industrialbuildings12');
+        map.getPane('pane_industrialbuildings12').style.zIndex = 612;
+        map.getPane('pane_industrialbuildings12').style['mix-blend-mode'] = 'normal';
+        var layer_industrialbuildings12 = new L.geoJson(json_industrialbuildings12, {
+            pane: 'pane_industrialbuildings12',
+            onEachFeature: pop_industrialbuildings12,
+            pointToLayer: function (feature, latlng) {
+                return L.circleMarker(latlng, style_industrialbuildings12(feature))
+            }
+        });
+        var cluster_industrialbuildings12 = new L.MarkerClusterGroup({showCoverageOnHover: false, disableClusteringAtZoom: 17});
+        cluster_industrialbuildings12.addLayer(layer_industrialbuildings12);
+
+        bounds_group.addLayer(layer_industrialbuildings12);
+        raster_group.addTo(map);
+        feature_group.addTo(map);
+
+        var baseMaps = {'OSM B&W': basemap0, 'OSM': basemap1, 'Stamen_TonerLite': Stamen_TonerLite};
+
+		var overlay = {
+			"SingPost Locations": layer_singpost7,
+			"Public Housing": cluster_publichousing9,
+			"Private Housing": cluster_privatehousing8,
+			"Office Buildings": cluster_officebuildings11,
+			"Industrial Buildings": cluster_industrialbuildings12,
+			"Retail Buildings": cluster_retailbuildings10,
+			"SingPost offices coverage of public housing within 1km radius": layer_publiccoverage1km5,
+			"SingPost offices coverage of private housing within 1km radius": layer_privatecoverage1km6,
+			"No. of Public Housing >1km from SingPost office": layer_cntpublicoutside1kmsubzones3,
+			"No. of Private Housing >1km from SingPost office": layer_cntprivateoutside1kmsubzones4,
+			"Proportion of Public Housing >1km from SingPost office": layer_publicoutside1kmsubzones2,
+			"Proportion of Private Housing >1km from SingPost office": layer_privateoutside1kmsubzones1,
+			"No. of Population Aged 25-44 (Working Adults)": layer_workingadultssubzones0
+		};
+
+		L.control.layers(baseMaps, overlay).addTo(map);
+		var mapControl = L.control({position: 'bottomright'});
+		var divContent = '';
+		mapControl.onAdd = function(map){
+			divContent += '<img src="markers/amenity_post_box.svg" style="width:22px;height:22px;" align="middle"/>SingPost Locations<br>';
+			var div = L.DomUtil.create('div', 'info');
+			div.innerHTML = divContent;
+			return div;
+		};
+		map.addControl(mapControl);
+		map.on('overlayadd', function(eventLayer){
+			if (eventLayer.name === 'SingPost Locations'){
+				divContent += '<img src="markers/amenity_post_box.svg" style="width:22px;height:22px;" align="middle"/>SingPost Locations<br>';
+				mapControl.onAdd = function(map){
+					var div = L.DomUtil.create('div', 'info');
+					div.innerHTML = divContent;
+					return div;
+				};
+				map.addControl(mapControl);
+			} 
+			else if (eventLayer.name === 'Public Housing'){
+				divContent += '<br>Public Housing (Distance from SingPost)<br><table><tr><td style="text-align: center;"><img src="legend/publichousing9_05000.png" /></td><td> 0m - 500m </td></tr><tr><td style="text-align: center;"><img src="legend/publichousing9_5007501.png" /></td><td> 500m - 750m </td></tr><tr><td style="text-align: center;"><img src="legend/publichousing9_75010002.png" /></td><td> 750m - 1000m </td></tr><tr><td style="text-align: center;"><img src="legend/publichousing9_100020003.png" /></td><td> 1000m - 2000m </td></tr><tr><td style="text-align: center;"><img src="legend/publichousing9_200036934.png" /></td><td> 2000m - 3693m </td></tr></table>';
+				mapControl.onAdd = function(map){
+					var div = mapControl.getContainer();
+					div.innerHTML = divContent;
+					return div;
+				};
+				map.addControl(mapControl);
+			} 
+			else if (eventLayer.name === 'Private Housing'){
+				divContent += '<br>Private Housing (Distance from SingPost)<br /><table><tr><td style="text-align: center;"><img src="legend/privatehousing8_175000.png" /></td><td> 17m - 500m </td></tr><tr><td style="text-align: center;"><img src="legend/privatehousing8_5007501.png" /></td><td> 500m - 750m </td></tr><tr><td style="text-align: center;"><img src="legend/privatehousing8_75010002.png" /></td><td> 750m - 1000m </td></tr><tr><td style="text-align: center;"><img src="legend/privatehousing8_100020003.png" /></td><td> 1000m - 2000m </td></tr><tr><td style="text-align: center;"><img src="legend/privatehousing8_200040934.png" /></td><td> 2000m - 4093m </td></tr></table>';
+				mapControl.onAdd = function(map){
+					var div = mapControl.getContainer();
+					div.innerHTML = divContent;
+					return div;
+				};
+				map.addControl(mapControl);
+			} 
+			else if (eventLayer.name === 'Office Buildings'){
+				divContent += '<br>Office Buildings (Distance from SingPost)<br /><table><tr><td style="text-align: center;"><img src="legend/officebuildings11_05000.png" /></td><td>0m - 500m</td></tr><tr><td style="text-align: center;"><img src="legend/officebuildings11_5007501.png" /></td><td>500m - 750m</td></tr><tr><td style="text-align: center;"><img src="legend/officebuildings11_75010002.png" /></td><td>750m - 1000m</td></tr><tr><td style="text-align: center;"><img src="legend/officebuildings11_100020003.png" /></td><td>1000m - 2000m</td></tr><tr><td style="text-align: center;"><img src="legend/officebuildings11_200024344.png" /></td><td>2000m - 2434m</td></tr></table>';
+				mapControl.onAdd = function(map){
+					var div = mapControl.getContainer();
+					div.innerHTML = divContent;
+					return div;
+				};
+				map.addControl(mapControl);
+			}
+			else if (eventLayer.name === 'Industrial Buildings'){
+				divContent += '<br>Industrial Buildings (Distance from SingPost)<br /><table><tr><td style="text-align: center;"><img src="legend/industrialbuildings12_25110000.png" /></td><td> 250m - 1000m </td></tr><tr><td style="text-align: center;"><img src="legend/industrialbuildings12_100020001.png" /></td><td> 1000m - 2000m </td></tr><tr><td style="text-align: center;"><img src="legend/industrialbuildings12_200040002.png" /></td><td> 2000m - 4000m </td></tr><tr><td style="text-align: center;"><img src="legend/industrialbuildings12_4000115193.png" /></td><td> 4000m - 11519m </td></tr></table>';
+				mapControl.onAdd = function(map){
+					var div = mapControl.getContainer();
+					div.innerHTML = divContent;
+					return div;
+				};
+				map.addControl(mapControl);
+			}
+			else if (eventLayer.name === 'Retail Buildings'){
+				divContent += '<br>Retail Buildings (Distance from SingPost)<br /><table><tr><td style="text-align: center;"><img src="legend/retailbuildings10_05000.png" /></td><td>0m - 500m</td></tr><tr><td style="text-align: center;"><img src="legend/retailbuildings10_5007501.png" /></td><td>500m - 750m</td></tr><tr><td style="text-align: center;"><img src="legend/retailbuildings10_75010002.png" /></td><td>750m - 1000m</td></tr><tr><td style="text-align: center;"><img src="legend/retailbuildings10_100020003.png" /></td><td>1000m - 2000m</td></tr><tr><td style="text-align: center;"><img src="legend/retailbuildings10_200035694.png" /></td><td>2000m - 3569m</td></tr></table>';
+				mapControl.onAdd = function(map){
+					var div = mapControl.getContainer();
+					div.innerHTML = divContent;
+					return div;
+				};
+				map.addControl(mapControl);
+			}
+			else if (eventLayer.name === 'SingPost offices coverage of public housing within 1km radius'){
+				divContent += '<br>SingPost offices coverage of public housing within 1km radius<br /><table><tr><td style="text-align: center;"><img src="legend/publiccoverage1km5_00000000000.png" /></td><td> 0.0000 - 0.0000 </td></tr><tr><td style="text-align: center;"><img src="legend/publiccoverage1km5_00000039881.png" /></td><td> 0.0000 - 0.3988 </td></tr><tr><td style="text-align: center;"><img src="legend/publiccoverage1km5_03988063342.png" /></td><td> 0.3988 - 0.6334 </td></tr><tr><td style="text-align: center;"><img src="legend/publiccoverage1km5_06334084003.png" /></td><td> 0.6334 - 0.8400 </td></tr><tr><td style="text-align: center;"><img src="legend/publiccoverage1km5_08400100004.png" /></td><td> 0.8400 - 1.0000 </td></tr></table>';
+				mapControl.onAdd = function(map){
+					var div = mapControl.getContainer();
+					div.innerHTML = divContent;
+					return div;
+				};
+				map.addControl(mapControl);
+			}
+			else if (eventLayer.name === 'SingPost offices coverage of private housing within 1km radius'){
+				divContent += '<br>SingPost offices coverage of private housing within 1km radius<br /><table><tr><td style="text-align: center;"><img src="legend/privatecoverage1km6_0000140.png" /></td><td> 0.00 - 0.14 </td></tr><tr><td style="text-align: center;"><img src="legend/privatecoverage1km6_0140331.png" /></td><td> 0.14 - 0.33 </td></tr><tr><td style="text-align: center;"><img src="legend/privatecoverage1km6_0330592.png" /></td><td> 0.33 - 0.59 </td></tr><tr><td style="text-align: center;"><img src="legend/privatecoverage1km6_0590813.png" /></td><td> 0.59 - 0.81 </td></tr><tr><td style="text-align: center;"><img src="legend/privatecoverage1km6_0811004.png" /></td><td> 0.81 - 1.00 </td></tr></table>';
+				mapControl.onAdd = function(map){
+					var div = mapControl.getContainer();
+					div.innerHTML = divContent;
+					return div;
+				};
+				map.addControl(mapControl);
+			}
+			else if (eventLayer.name === 'No. of Public Housing >1km from SingPost office'){
+				divContent += '<br>No. of Public Housing >1km from SingPost office<br /><table><tr><td style="text-align: center;"><img src="legend/cntpublicoutside1kmsubzones3_00000900000.png" /></td><td> 0 - 9 </td></tr><tr><td style="text-align: center;"><img src="legend/cntpublicoutside1kmsubzones3_900003600001.png" /></td><td> 9 - 36 </td></tr><tr><td style="text-align: center;"><img src="legend/cntpublicoutside1kmsubzones3_3600007000002.png" /></td><td> 36 - 70 </td></tr><tr><td style="text-align: center;"><img src="legend/cntpublicoutside1kmsubzones3_70000014200003.png" /></td><td> 70 - 142 </td></tr><tr><td style="text-align: center;"><img src="legend/cntpublicoutside1kmsubzones3_142000026000004.png" /></td><td> 142 - 260 </td></tr></table>';
+				mapControl.onAdd = function(map){
+					var div = mapControl.getContainer();
+					div.innerHTML = divContent;
+					return div;
+				};
+				map.addControl(mapControl);
+			}
+			else if (eventLayer.name === 'No. of Private Housing >1km from SingPost office'){
+				divContent += '<br>No. of Private Housing >1km from SingPost office<br /><table><tr><td style="text-align: center;"><img src="legend/cntprivateoutside1kmsubzones4_000001500000.png" /></td><td> 0 - 15</td></tr><tr><td style="text-align: center;"><img src="legend/cntprivateoutside1kmsubzones4_1500005600001.png" /></td><td> 15 - 56 </td></tr><tr><td style="text-align: center;"><img src="legend/cntprivateoutside1kmsubzones4_56000010600002.png" /></td><td> 56 - 106 </td></tr><tr><td style="text-align: center;"><img src="legend/cntprivateoutside1kmsubzones4_106000017700003.png" /></td><td> 106 - 177 </td></tr><tr><td style="text-align: center;"><img src="legend/cntprivateoutside1kmsubzones4_177000034400004.png" /></td><td> 177 - 344 </td></tr></table>';
+				mapControl.onAdd = function(map){
+					var div = mapControl.getContainer();
+					div.innerHTML = divContent;
+					return div;
+				};
+				map.addControl(mapControl);
+			}
+			else if (eventLayer.name === 'Proportion of Public Housing >1km from SingPost office'){
+				divContent += '<br>Proportion of Public Housing >1km from SingPost office<br /><table><tr><td style="text-align: center;"><img src="legend/publicoutside1kmsubzones2_00000012120.png" /></td><td> 0.0000 - 0.1212 </td></tr><tr><td style="text-align: center;"><img src="legend/publicoutside1kmsubzones2_01212034331.png" /></td><td> 0.1212 - 0.3433 </td></tr><tr><td style="text-align: center;"><img src="legend/publicoutside1kmsubzones2_03433055102.png" /></td><td> 0.3433 - 0.5510 </td></tr><tr><td style="text-align: center;"><img src="legend/publicoutside1kmsubzones2_05510079363.png" /></td><td> 0.5510 - 0.7936 </td></tr><tr><td style="text-align: center;"><img src="legend/publicoutside1kmsubzones2_07936100004.png" /></td><td> 0.7936 - 1.0000 </td></tr></table>';
+				mapControl.onAdd = function(map){
+					var div = mapControl.getContainer();
+					div.innerHTML = divContent;
+					return div;
+				};
+				map.addControl(mapControl);
+			}
+			else if (eventLayer.name === 'Proportion of Private Housing >1km from SingPost office'){
+				divContent += '<br>Proportion of Private Housing >1km from SingPost office<br /><table><tr><td style="text-align: center;"><img src="legend/privateoutside1kmsubzones1_00000012500.png" /></td><td> 0.0000 - 0.1250 </td></tr><tr><td style="text-align: center;"><img src="legend/privateoutside1kmsubzones1_01250034881.png" /></td><td> 0.1250 - 0.3488 </td></tr><tr><td style="text-align: center;"><img src="legend/privateoutside1kmsubzones1_03488055572.png" /></td><td> 0.3488 - 0.5557 </td></tr><tr><td style="text-align: center;"><img src="legend/privateoutside1kmsubzones1_05557080953.png" /></td><td> 0.5557 - 0.8095 </td></tr><tr><td style="text-align: center;"><img src="legend/privateoutside1kmsubzones1_08095100004.png" /></td><td> 0.8095 - 1.0000 </td></tr></table>';
+				mapControl.onAdd = function(map){
+					var div = mapControl.getContainer();
+					div.innerHTML = divContent;
+					return div;
+				};
+				map.addControl(mapControl);
+			}
+			else if (eventLayer.name === 'No. of Population Aged 25-44 (Working Adults)'){
+				divContent += '<br>No. of Population Aged 25-44 (Working Adults)<br /><table><tr><td style="text-align: center;"><img src="legend/workingadultssubzones0_020800.png" /></td><td> 0 - 2080 </td></tr><tr><td style="text-align: center;"><img src="legend/workingadultssubzones0_208063001.png" /></td><td> 2080 - 6300 </td></tr><tr><td style="text-align: center;"><img src="legend/workingadultssubzones0_6300136802.png" /></td><td> 6300 - 13680 </td></tr><tr><td style="text-align: center;"><img src="legend/workingadultssubzones0_13680246903.png" /></td><td> 13680 - 24690 </td></tr><tr><td style="text-align: center;"><img src="legend/workingadultssubzones0_24690391204.png" /></td><td> 24690 - 39120 </td></tr></table>';
+				mapControl.onAdd = function(map){
+					var div = mapControl.getContainer();
+					div.innerHTML = divContent;
+					return div;
+				};
+				map.addControl(mapControl);
+			}
+		});
+
+		map.on('overlayremove', function(eventLayer){
+			if (eventLayer.name === 'SingPost Locations'){
+				divContent = divContent.replace('<img src="markers/amenity_post_box.svg" style="width:22px;height:22px;" align="middle"/>SingPost Locations<br>','');
+				mapControl.onAdd = function(map){
+					var div = L.DomUtil.create('div', 'info');
+					div.innerHTML = divContent;
+					return div;
+				};
+				map.addControl(mapControl);
+			} 
+			else if (eventLayer.name === 'Public Housing'){
+				divContent = divContent.replace('<br>Public Housing (Distance from SingPost)<br><table><tr><td style="text-align: center;"><img src="legend/publichousing9_05000.png" /></td><td> 0m - 500m </td></tr><tr><td style="text-align: center;"><img src="legend/publichousing9_5007501.png" /></td><td> 500m - 750m </td></tr><tr><td style="text-align: center;"><img src="legend/publichousing9_75010002.png" /></td><td> 750m - 1000m </td></tr><tr><td style="text-align: center;"><img src="legend/publichousing9_100020003.png" /></td><td> 1000m - 2000m </td></tr><tr><td style="text-align: center;"><img src="legend/publichousing9_200036934.png" /></td><td> 2000m - 3693m </td></tr></table>','');
+				mapControl.onAdd = function(map){
+					var div = mapControl.getContainer();
+					div.innerHTML = divContent;
+					return div;
+				};
+				map.addControl(mapControl);
+			} 
+			else if (eventLayer.name === 'Private Housing'){
+				divContent = divContent.replace('<br>Private Housing (Distance from SingPost)<br /><table><tr><td style="text-align: center;"><img src="legend/privatehousing8_175000.png" /></td><td> 17m - 500m </td></tr><tr><td style="text-align: center;"><img src="legend/privatehousing8_5007501.png" /></td><td> 500m - 750m </td></tr><tr><td style="text-align: center;"><img src="legend/privatehousing8_75010002.png" /></td><td> 750m - 1000m </td></tr><tr><td style="text-align: center;"><img src="legend/privatehousing8_100020003.png" /></td><td> 1000m - 2000m </td></tr><tr><td style="text-align: center;"><img src="legend/privatehousing8_200040934.png" /></td><td> 2000m - 4093m </td></tr></table>','');
+				mapControl.onAdd = function(map){
+					var div = mapControl.getContainer();
+					div.innerHTML = divContent;
+					return div;
+				};
+				map.addControl(mapControl);
+			} 
+			else if (eventLayer.name === 'Office Buildings'){
+				divContent = divContent.replace('<br>Office Buildings (Distance from SingPost)<br /><table><tr><td style="text-align: center;"><img src="legend/officebuildings11_05000.png" /></td><td>0m - 500m</td></tr><tr><td style="text-align: center;"><img src="legend/officebuildings11_5007501.png" /></td><td>500m - 750m</td></tr><tr><td style="text-align: center;"><img src="legend/officebuildings11_75010002.png" /></td><td>750m - 1000m</td></tr><tr><td style="text-align: center;"><img src="legend/officebuildings11_100020003.png" /></td><td>1000m - 2000m</td></tr><tr><td style="text-align: center;"><img src="legend/officebuildings11_200024344.png" /></td><td>2000m - 2434m</td></tr></table>','');
+				mapControl.onAdd = function(map){
+					var div = mapControl.getContainer();
+					div.innerHTML = divContent;
+					return div;
+				};
+				map.addControl(mapControl);
+			}
+			else if (eventLayer.name === 'Industrial Buildings'){
+				divContent = divContent.replace('<br>Industrial Buildings (Distance from SingPost)<br /><table><tr><td style="text-align: center;"><img src="legend/industrialbuildings12_25110000.png" /></td><td> 250m - 1000m </td></tr><tr><td style="text-align: center;"><img src="legend/industrialbuildings12_100020001.png" /></td><td> 1000m - 2000m </td></tr><tr><td style="text-align: center;"><img src="legend/industrialbuildings12_200040002.png" /></td><td> 2000m - 4000m </td></tr><tr><td style="text-align: center;"><img src="legend/industrialbuildings12_4000115193.png" /></td><td> 4000m - 11519m </td></tr></table>','');
+				mapControl.onAdd = function(map){
+					var div = mapControl.getContainer();
+					div.innerHTML = divContent;
+					return div;
+				};
+				map.addControl(mapControl);
+			}
+			else if (eventLayer.name === 'Retail Buildings'){
+				divContent = divContent.replace('<br>Retail Buildings (Distance from SingPost)<br /><table><tr><td style="text-align: center;"><img src="legend/retailbuildings10_05000.png" /></td><td>0m - 500m</td></tr><tr><td style="text-align: center;"><img src="legend/retailbuildings10_5007501.png" /></td><td>500m - 750m</td></tr><tr><td style="text-align: center;"><img src="legend/retailbuildings10_75010002.png" /></td><td>750m - 1000m</td></tr><tr><td style="text-align: center;"><img src="legend/retailbuildings10_100020003.png" /></td><td>1000m - 2000m</td></tr><tr><td style="text-align: center;"><img src="legend/retailbuildings10_200035694.png" /></td><td>2000m - 3569m</td></tr></table>','');
+				mapControl.onAdd = function(map){
+					var div = mapControl.getContainer();
+					div.innerHTML = divContent;
+					return div;
+				};
+				map.addControl(mapControl);
+			}
+			else if (eventLayer.name === 'SingPost offices coverage of public housing within 1km radius'){
+				divContent = divContent.replace('<br>SingPost offices coverage of public housing within 1km radius<br /><table><tr><td style="text-align: center;"><img src="legend/publiccoverage1km5_00000000000.png" /></td><td> 0.0000 - 0.0000 </td></tr><tr><td style="text-align: center;"><img src="legend/publiccoverage1km5_00000039881.png" /></td><td> 0.0000 - 0.3988 </td></tr><tr><td style="text-align: center;"><img src="legend/publiccoverage1km5_03988063342.png" /></td><td> 0.3988 - 0.6334 </td></tr><tr><td style="text-align: center;"><img src="legend/publiccoverage1km5_06334084003.png" /></td><td> 0.6334 - 0.8400 </td></tr><tr><td style="text-align: center;"><img src="legend/publiccoverage1km5_08400100004.png" /></td><td> 0.8400 - 1.0000 </td></tr></table>','');
+				mapControl.onAdd = function(map){
+					var div = mapControl.getContainer();
+					div.innerHTML = divContent;
+					return div;
+				};
+				map.addControl(mapControl);
+			}
+			else if (eventLayer.name === 'SingPost offices coverage of private housing within 1km radius'){
+				divContent = divContent.replace('<br>SingPost offices coverage of private housing within 1km radius<br /><table><tr><td style="text-align: center;"><img src="legend/privatecoverage1km6_0000140.png" /></td><td> 0.00 - 0.14 </td></tr><tr><td style="text-align: center;"><img src="legend/privatecoverage1km6_0140331.png" /></td><td> 0.14 - 0.33 </td></tr><tr><td style="text-align: center;"><img src="legend/privatecoverage1km6_0330592.png" /></td><td> 0.33 - 0.59 </td></tr><tr><td style="text-align: center;"><img src="legend/privatecoverage1km6_0590813.png" /></td><td> 0.59 - 0.81 </td></tr><tr><td style="text-align: center;"><img src="legend/privatecoverage1km6_0811004.png" /></td><td> 0.81 - 1.00 </td></tr></table>','');
+				mapControl.onAdd = function(map){
+					var div = mapControl.getContainer();
+					div.innerHTML = divContent;
+					return div;
+				};
+				map.addControl(mapControl);
+			}
+			else if (eventLayer.name === 'No. of Public Housing >1km from SingPost office'){
+				divContent = divContent.replace('<br>No. of Public Housing >1km from SingPost office<br /><table><tr><td style="text-align: center;"><img src="legend/cntpublicoutside1kmsubzones3_00000900000.png" /></td><td> 0 - 9 </td></tr><tr><td style="text-align: center;"><img src="legend/cntpublicoutside1kmsubzones3_900003600001.png" /></td><td> 9 - 36 </td></tr><tr><td style="text-align: center;"><img src="legend/cntpublicoutside1kmsubzones3_3600007000002.png" /></td><td> 36 - 70 </td></tr><tr><td style="text-align: center;"><img src="legend/cntpublicoutside1kmsubzones3_70000014200003.png" /></td><td> 70 - 142 </td></tr><tr><td style="text-align: center;"><img src="legend/cntpublicoutside1kmsubzones3_142000026000004.png" /></td><td> 142 - 260 </td></tr></table>','');
+				mapControl.onAdd = function(map){
+					var div = mapControl.getContainer();
+					div.innerHTML = divContent;
+					return div;
+				};
+				map.addControl(mapControl);
+			}
+			else if (eventLayer.name === 'No. of Private Housing >1km from SingPost office'){
+				divContent = divContent.replace('<br>No. of Private Housing >1km from SingPost office<br /><table><tr><td style="text-align: center;"><img src="legend/cntprivateoutside1kmsubzones4_000001500000.png" /></td><td> 0 - 15</td></tr><tr><td style="text-align: center;"><img src="legend/cntprivateoutside1kmsubzones4_1500005600001.png" /></td><td> 15 - 56 </td></tr><tr><td style="text-align: center;"><img src="legend/cntprivateoutside1kmsubzones4_56000010600002.png" /></td><td> 56 - 106 </td></tr><tr><td style="text-align: center;"><img src="legend/cntprivateoutside1kmsubzones4_106000017700003.png" /></td><td> 106 - 177 </td></tr><tr><td style="text-align: center;"><img src="legend/cntprivateoutside1kmsubzones4_177000034400004.png" /></td><td> 177 - 344 </td></tr></table>','');
+				mapControl.onAdd = function(map){
+					var div = mapControl.getContainer();
+					div.innerHTML = divContent;
+					return div;
+				};
+				map.addControl(mapControl);
+			}
+			else if (eventLayer.name === 'Proportion of Public Housing >1km from SingPost office'){
+				divContent = divContent.replace('<br>Proportion of Public Housing >1km from SingPost office<br /><table><tr><td style="text-align: center;"><img src="legend/publicoutside1kmsubzones2_00000012120.png" /></td><td> 0.0000 - 0.1212 </td></tr><tr><td style="text-align: center;"><img src="legend/publicoutside1kmsubzones2_01212034331.png" /></td><td> 0.1212 - 0.3433 </td></tr><tr><td style="text-align: center;"><img src="legend/publicoutside1kmsubzones2_03433055102.png" /></td><td> 0.3433 - 0.5510 </td></tr><tr><td style="text-align: center;"><img src="legend/publicoutside1kmsubzones2_05510079363.png" /></td><td> 0.5510 - 0.7936 </td></tr><tr><td style="text-align: center;"><img src="legend/publicoutside1kmsubzones2_07936100004.png" /></td><td> 0.7936 - 1.0000 </td></tr></table>','');
+				mapControl.onAdd = function(map){
+					var div = mapControl.getContainer();
+					div.innerHTML = divContent;
+					return div;
+				};
+				map.addControl(mapControl);
+			}
+			else if (eventLayer.name === 'Proportion of Private Housing >1km from SingPost office'){
+				divContent = divContent.replace('<br>Proportion of Private Housing >1km from SingPost office<br /><table><tr><td style="text-align: center;"><img src="legend/privateoutside1kmsubzones1_00000012500.png" /></td><td> 0.0000 - 0.1250 </td></tr><tr><td style="text-align: center;"><img src="legend/privateoutside1kmsubzones1_01250034881.png" /></td><td> 0.1250 - 0.3488 </td></tr><tr><td style="text-align: center;"><img src="legend/privateoutside1kmsubzones1_03488055572.png" /></td><td> 0.3488 - 0.5557 </td></tr><tr><td style="text-align: center;"><img src="legend/privateoutside1kmsubzones1_05557080953.png" /></td><td> 0.5557 - 0.8095 </td></tr><tr><td style="text-align: center;"><img src="legend/privateoutside1kmsubzones1_08095100004.png" /></td><td> 0.8095 - 1.0000 </td></tr></table>','');
+				mapControl.onAdd = function(map){
+					var div = mapControl.getContainer();
+					div.innerHTML = divContent;
+					return div;
+				};
+				map.addControl(mapControl);
+			}
+			else if (eventLayer.name === 'No. of Population Aged 25-44 (Working Adults)'){
+				divContent = divContent.replace('<br>No. of Population Aged 25-44 (Working Adults)<br /><table><tr><td style="text-align: center;"><img src="legend/workingadultssubzones0_020800.png" /></td><td> 0 - 2080 </td></tr><tr><td style="text-align: center;"><img src="legend/workingadultssubzones0_208063001.png" /></td><td> 2080 - 6300 </td></tr><tr><td style="text-align: center;"><img src="legend/workingadultssubzones0_6300136802.png" /></td><td> 6300 - 13680 </td></tr><tr><td style="text-align: center;"><img src="legend/workingadultssubzones0_13680246903.png" /></td><td> 13680 - 24690 </td></tr><tr><td style="text-align: center;"><img src="legend/workingadultssubzones0_24690391204.png" /></td><td> 24690 - 39120 </td></tr></table>','');
+				mapControl.onAdd = function(map){
+					var div = mapControl.getContainer();
+					div.innerHTML = divContent;
+					return div;
+				};
+				map.addControl(mapControl);
+			}
+			
+		});
+		L.control.scale().addTo(map);
+        setBounds();
+        </script>
+    </body>
+</html>
